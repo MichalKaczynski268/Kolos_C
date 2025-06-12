@@ -1,0 +1,408 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <wchar.h>
+
+5.2.9 
+char *wytnij(const char *napis, int n, int m) {
+    char *wynik = NULL;
+    int dl = strlen(napis);
+    if (n >= 0 && m >= n && n < dl) {
+        int ile = (m < dl ? m : dl - 1) - n + 1;
+        wynik = malloc((ile + 1) * sizeof(char));
+        if (wynik != NULL) {
+            strncpy(wynik, napis + n, ile);
+            wynik[ile] = '\0';
+        }
+    }
+    return wynik;
+}
+
+int main() {
+    // Test dla char
+    char *napis = "abcdefg";
+    char *wynik = wytnij(napis, 2, 5);
+    if (wynik != NULL) {
+        printf("Wynik: %s\n", wynik); // powinno być "cdef"
+        free(wynik);
+    }
+}
+
+5.2.10
+char *wytnij2(const char *nap1, const char *nap2) {
+    char *wynik = NULL;
+    const char *wyst = strstr(nap1, nap2);
+    if (wyst == NULL) {
+        wynik = malloc(strlen(nap1) + 1);
+        if (wynik) strcpy(wynik, nap1);
+    } else {
+        int len1 = strlen(nap1);
+        int len2 = strlen(nap2);
+        int start = wyst - nap1;
+        wynik = malloc(len1 - len2 + 1);
+        if (wynik != NULL) {
+            strncpy(wynik, nap1, start);
+            strcpy(wynik + start, nap1 + start + len2);
+        }
+    }
+    return wynik;
+}
+
+int main() {
+    // Test char
+    char *nap1 = "abrakadabra";
+    char *nap2 = "kad";
+    char *wynik = wytnij2(nap1, nap2);
+    if (wynik != NULL) {
+        printf("Wynik: %s\n", wynik); // "abradabra"
+        free(wynik);
+    }
+}
+
+5.2.11
+char *wytnijzw(const char *nap1, const char *nap2) {
+    char *wynik = malloc(strlen(nap1) + 1);
+    if (wynik == NULL) return NULL;
+    int j = 0;
+    for (int i = 0; nap1[i]; i++) {
+        if (strchr(nap2, nap1[i]) == NULL) {
+            wynik[j] = nap1[i];
+            j++;
+        }
+    }
+    wynik[j] = '\0';
+    return wynik;
+}
+
+int main() {
+    // Test char
+    char *nap1 = "abrakadabra";
+    char *nap2 = "abc";
+    char *wynik = wytnijzw(nap1, nap2);
+    if (wynik != NULL) {
+        printf("Wynik: %s\n", wynik); // "rkdrr"
+        free(wynik);
+    }
+}
+
+5.2.12
+char *wytnijzn(const char *nap1, const char *nap2) {
+    char *wynik = malloc(strlen(nap1) + 1);
+    if (wynik == NULL) return NULL;
+    int j = 0;
+    for (int i = 0; nap1[i]; i++) {
+        if (strchr(nap2, nap1[i]) != NULL) {
+            wynik[j] = nap1[i];
+            j++;
+        }
+    }
+    wynik[j] = '\0';
+    return wynik;
+}
+
+int main() {
+    // Test char
+    char *nap1 = "abrakadabra";
+    char *nap2 = "bd";
+    char *wynik = wytnijzn(nap1, nap2);
+    if (wynik != NULL) {
+        printf("Wynik: %s\n", wynik); // powinno wypisać: "bdab"
+        free(wynik);
+    }
+}
+
+5.2.13
+char *wytnijtm(const char *nap1, const char *nap2) {
+    int len1 = strlen(nap1);
+    int len2 = strlen(nap2);
+    if (len1 != len2) return NULL;
+
+    char *wynik = malloc(len1 + 1);
+    if (wynik == NULL) return NULL;
+
+    int j = 0;
+    for (int i = 0; i < len1; i++) {
+        if (nap1[i] != nap2[i]) {
+            wynik[j] = nap1[i];
+            j++;
+        }
+    }
+    wynik[j] = '\0';
+    return wynik;
+}
+
+int main() {
+    // Test dla char
+    char *nap1 = "abrakadabra";
+    char *nap2 = "abrxyzdxbra";
+    char *wynik = wytnijtm(nap1, nap2);
+    if (wynik != NULL) {
+        printf("Wynik: %s\n", wynik); // "aka"
+        free(wynik);
+    }
+}
+
+7.3.32
+struct element {
+    int wartosc;
+    struct element *nast;
+};
+
+// Funkcja tworząca nowy węzeł
+struct element *nowyElement(int x) {
+    struct element *e = malloc(sizeof(struct element));
+    if (e != NULL) {
+        e->wartosc = x;
+        e->nast = NULL;
+    }
+    return e;
+}
+
+// Funkcja łącząca listy naprzemiennie
+struct element *polaczNaprzemiennie(struct element *a, struct element *b) {
+    struct element *glowa = NULL, *ogon = NULL;
+    while (a != NULL && b != NULL) {
+        struct element *e1 = nowyElement(a->wartosc);
+        struct element *e2 = nowyElement(b->wartosc);
+        if (glowa == NULL) {
+            glowa = e1;
+            ogon = e1;
+        } else {
+            ogon->nast = e1;
+            ogon = ogon->nast;
+        }
+        ogon->nast = e2;
+        ogon = ogon->nast;
+
+        a = a->nast;
+        b = b->nast;
+    }
+    return glowa;
+}
+
+// Pomocnicza funkcja do wyświetlania listy
+void pokazListe(struct element *p) {
+    while (p != NULL) {
+        printf("%d -> ", p->wartosc);
+        p = p->nast;
+    }
+    printf("NULL\n");
+}
+
+// Test
+int main() {
+    // Tworzenie dwóch list: 1->3->5 i 2->4->6
+    struct element *a = nowyElement(1);
+    a->nast = nowyElement(3);
+    a->nast->nast = nowyElement(5);
+
+    struct element *b = nowyElement(2);
+    b->nast = nowyElement(4);
+    b->nast->nast = nowyElement(6);
+
+    // Łączenie naprzemienne
+    struct element *wynik = polaczNaprzemiennie(a, b);
+    pokazListe(wynik); // oczekiwane: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> NULL
+
+    return 0;
+}
+
+7.3.33
+#include <stdio.h>
+#include <stdlib.h>
+
+struct element {
+    int wartosc;
+    struct element *nast;
+};
+
+// Dla listy z głową
+void przesun_z_glowa(struct element *head) {
+    if (head == NULL || head->nast == NULL || head->nast->nast == NULL)
+        return;
+
+    struct element *prev = NULL;
+    struct element *curr = head->nast;
+
+    while (curr->nast != NULL) {
+        prev = curr;
+        curr = curr->nast;
+    }
+
+    prev->nast = NULL;
+    curr->nast = head->nast;
+    head->nast = curr;
+}
+
+// Dla listy bez głowy
+struct element* przesun_bez_glowy(struct element *head) {
+    if (head == NULL || head->nast == NULL)
+        return head;
+
+    struct element *prev = NULL;
+    struct element *curr = head;
+
+    while (curr->nast != NULL) {
+        prev = curr;
+        curr = curr->nast;
+    }
+
+    prev->nast = NULL;
+    curr->nast = head;
+    return curr;
+}
+
+void drukuj(struct element *l) {
+    while (l != NULL) {
+        printf("%d -> ", l->wartosc);
+        l = l->nast;
+    }
+    printf("NULL\n");
+}
+
+int main() {
+    // ===== Test wersji bez głowy =====
+    struct element *lista = malloc(sizeof(struct element));
+    lista->wartosc = 1;
+    lista->nast = malloc(sizeof(struct element));
+    lista->nast->wartosc = 2;
+    lista->nast->nast = malloc(sizeof(struct element));
+    lista->nast->nast->wartosc = 3;
+    lista->nast->nast->nast = NULL;
+
+    printf("Lista bez głowy - przed przesunięciem:\n");
+    drukuj(lista);
+    lista = przesun_bez_glowy(lista);
+    printf("Lista bez głowy - po przesunięciu:\n");
+    drukuj(lista);
+
+    // ===== Test wersji z głową =====
+    struct element *head = malloc(sizeof(struct element)); // element głowy
+    head->nast = malloc(sizeof(struct element));
+    head->nast->wartosc = 4;
+    head->nast->nast = malloc(sizeof(struct element));
+    head->nast->nast->wartosc = 5;
+    head->nast->nast->nast = malloc(sizeof(struct element));
+    head->nast->nast->nast->wartosc = 6;
+    head->nast->nast->nast->nast = NULL;
+
+    printf("\nLista z głową - przed przesunięciem:\n");
+    drukuj(head->nast);
+    przesun_z_glowa(head);
+    printf("Lista z głową - po przesunięciu:\n");
+    drukuj(head->nast);
+
+    return 0;
+}
+
+ZADANIE Z SUMOWANIEM DO KWADRATU W LISCIE
+
+struct element {
+    int wartosc;
+    struct element *nast;
+};
+
+int suma_do_kwadratu(struct element *l) {
+    int suma = 0;
+    while (l != NULL) {
+        suma += l->wartosc;
+        l = l->nast;
+    }
+    return suma * suma;
+}
+
+int main() {
+    // Lista: 1 -> 2 -> 3
+    struct element *l = malloc(sizeof(struct element));
+    l->wartosc = 1;
+    l->nast = malloc(sizeof(struct element));
+    l->nast->wartosc = 2;
+    l->nast->nast = malloc(sizeof(struct element));
+    l->nast->nast->wartosc = 3;
+    l->nast->nast->nast = NULL;
+
+    int wynik = suma_do_kwadratu(l);
+    printf("Suma do kwadratu = %d\n", wynik);  // (1+2+3)^2 = 36
+
+    return 0;
+}
+
+DRUGI PRZYKLAD 
+znaleźć wszystkie pary sąsiednich elementów,
+
+dla każdej pary policzyć sumę tych dwóch liczb i podnieść ją do kwadratu,
+
+zwrócić sumę wszystkich takich kwadratów.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct element {
+    int wartosc;
+    struct element *nast;
+};
+
+int suma_kwadratow_par(struct element *l) {
+    int suma = 0;
+    while (l != NULL && l->nast != NULL) {
+        int s = l->wartosc + l->nast->wartosc;
+        suma += s * s;
+        l = l->nast;
+    }
+    return suma;
+}
+
+int main() {
+    // Lista: 2 -> 5 -> -1 -> 3
+    struct element *l = malloc(sizeof(struct element));
+    l->wartosc = 2;
+    l->nast = malloc(sizeof(struct element));
+    l->nast->wartosc = 5;
+    l->nast->nast = malloc(sizeof(struct element));
+    l->nast->nast->wartosc = -1;
+    l->nast->nast->nast = malloc(sizeof(struct element));
+    l->nast->nast->nast->wartosc = 3;
+    l->nast->nast->nast->nast = NULL;
+
+    int wynik = suma_kwadratow_par(l);
+    printf("Suma kwadratów sum sąsiednich par = %d\n", wynik);  // 69
+
+    return 0;
+}
+
+5.2.7
+#include <stdio.h>
+#include <string.h>
+#include <wchar.h>
+
+// Wersja dla char
+void sklej_char(const char *nap1, const char *nap2, char *wynik) {
+    strcpy(wynik, nap1);
+    strcat(wynik, nap2);
+}
+
+// Wersja dla wchar_t
+void sklej_wchar(const wchar_t *nap1, const wchar_t *nap2, wchar_t *wynik) {
+    wcscpy(wynik, nap1);
+    wcscat(wynik, nap2);
+}
+
+int main() {
+    // Test char
+    char n1[] = "Ala m";
+    char n2[] = "a kota";
+    char wynik1[100];
+    sklej_char(n1, n2, wynik1);
+    printf("Char: %s\n", wynik1);
+
+    // Test wchar_t
+    wchar_t wn1[] = L"Ala m";
+    wchar_t wn2[] = L"a kota";
+    wchar_t wynik2[100];
+    sklej_wchar(wn1, wn2, wynik2);
+    wprintf(L"Wchar: %ls\n", wynik2);
+
+    return 0;
+}
+
+
